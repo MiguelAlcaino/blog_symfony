@@ -1,0 +1,14 @@
+{{ form_start(form) }}
+<div>
+    {{ form_label(form.title) }}
+    {{ form_widget(form.title) }}
+</div>
+<div>
+    {{ form_label(form.body) }}
+    {{ form_widget(form.body) }}
+</div>
+
+<button type="submit">Create</button>
+
+{{ form_end(form) }}
+
