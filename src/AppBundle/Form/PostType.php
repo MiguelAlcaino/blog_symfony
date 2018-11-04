@@ -2,7 +2,6 @@
 
 namespace AppBundle\Form;
 
-use AppBundle\Entity\Post;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -12,20 +11,16 @@ class PostType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)// se contruye los campos del formulario
+    public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder
-            ->add('title')
-            ->add('body');
-    }
-
-    /**
+        $builder->add('title')->add('body')->add('createdAt');
+    }/**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $resolver)//se define la entidad del formulario
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
-            'data_class' => Post::class//'AppBundle\Entity\Post'
+            'data_class' => 'AppBundle\Entity\Post'
         ));
     }
 
