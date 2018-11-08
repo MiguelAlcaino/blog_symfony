@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a53858fc80a103e8aaad3d12e9eb116",
+    "content-hash": "b6d7a38a07a3cbd0cfd60333113a45d0",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -888,6 +888,45 @@
                 "rest"
             ],
             "time": "2016-10-17T18:31:11+00:00"
+        },
+        {
+            "name": "freshwork/transbank",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/freshworkstudio/transbank-web-services.git",
+                "reference": "381f10e9f535579c41d620843ecd09d0649a34f8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/freshworkstudio/transbank-web-services/zipball/381f10e9f535579c41d620843ecd09d0649a34f8",
+                "reference": "381f10e9f535579c41d620843ecd09d0649a34f8",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Freshwork\\Transbank\\": "src/"
+                },
+                "classmap": [
+                    "src/wss"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gonzalo De Spirito",
+                    "email": "gonzalo@freshworkstudio.com"
+                }
+            ],
+            "description": "SDK para webservices de transbank (Webpay Plus, Webpay OneClick, Webpay PatPass)",
+            "time": "2018-10-01T19:54:10+00:00"
         },
         {
             "name": "incenteev/composer-parameter-handler",
@@ -2451,8 +2490,5 @@
     "platform": {
         "php": ">=5.5.9"
     },
-    "platform-dev": [],
-    "platform-overrides": {
-        "php": "5.6"
-    }
+    "platform-dev": []
 }

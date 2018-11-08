@@ -3,11 +3,16 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Post;
+use AppBundle\Form\DeletePostType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Component\Form\Test\FormInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+
+use Freshwork\Transbank\CertificationBagFactory;
+use Freshwork\Transbank\TransbankServiceFactory;
+use Freshwork\Transbank\RedirectorHelper;
 
 /**
  * Post controller.
@@ -59,21 +64,7 @@ class PostController extends Controller
         ));
     }
 
-    /**
-     * Finds and displays a post entity.
-     *
-     * @Route("/{id}", name="post_show")
-     * @Method("GET")
-     */
-    public function showAction(Post $post)
-    {
-        $deleteForm = $this->createDeleteForm($post);
 
-        return $this->render('@App/post/show.html.twig', array(
-            'post' => $post,
-            'delete_form' => $deleteForm->createView(),
-        ));
-    }
 
     /**
      * Displays a form to edit an existing post entity.
@@ -83,7 +74,28 @@ class PostController extends Controller
      */
     public function editAction(Request $request, Post $post)
     {
-        $deleteForm = $this->createDeleteForm($post);
+
+        $bag = CertificationBagFactory::integrationWebpayNormal();
+
+        $plus = TransbankServiceFactory::normal($bag);//webpay normal -> plus
+
+        //Para transacciones normales, solo se puede añadir una linea de detalle de transacción.
+        $plus->addTransactionDetail(1000, 'prueba'.rand(0,10000)); //monto e id transaccion
+
+        //urls: respuesta-> return: se aprueba o rechaza pago; y exitoso
+        $response = $plus->initTransaction('http://test.dev/response', 'http://test.dev/thanks');
+
+
+        echo RedirectorHelper::redirectHTML($response->url, $response->token);
+
+        var_dump($response);
+        die();
+
+        //$deleteForm = $this->createDeleteForm($post);
+        $deleteForm = $this->createForm(DeletePostType::class, null, [
+                'action' => $this->generateUrl('post_delete', ['id' => $post->getId()
+            ])
+        ]);
         $editForm = $this->createForm('AppBundle\Form\PostType', $post);
         $editForm->handleRequest($request);
 
@@ -103,12 +115,13 @@ class PostController extends Controller
     /**
      * Deletes a post entity.
      *
-     * @Route("/{id}", name="post_delete")
-     * @Method("DELETE")
+     * @Route("/delete/{id}", name="post_delete")
+     * @Method("POST")
      */
     public function deleteAction(Request $request, Post $post)
     {
-        $form = $this->createDeleteForm($post);
+
+        $form = $this->createForm(DeletePostType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -118,6 +131,22 @@ class PostController extends Controller
         }
 
         return $this->redirectToRoute('post_index');
+    }
+
+    /**
+     * Finds and displays a post entity.
+     *
+     * @Route("/{id}", name="post_show")
+     * @Method("GET")
+     */
+    public function showAction(Post $post)
+    {
+        $deleteForm = $this->createDeleteForm($post);
+
+        return $this->render('@App/post/show.html.twig', array(
+            'post' => $post,
+            'delete_form' => $deleteForm->createView(),
+        ));
     }
 
     /**

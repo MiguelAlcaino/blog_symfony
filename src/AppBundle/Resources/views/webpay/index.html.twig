@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Web pay</h1>
+
+    <form method="post" action="{{ path('webpay_pagar') }}">
+        <!--<a href="{{ path('webpay_pagar') }}">Pagar $1.000</a>-->
+        <input type="text" name="valor" value="1000">
+        <input type="submit" value="Pagar $1.000">
+    </form>
+
+{% endblock %}
