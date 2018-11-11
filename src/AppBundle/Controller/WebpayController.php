@@ -2,11 +2,11 @@
 
 namespace AppBundle\Controller;
 
-use AppBundle\Entity\Post;
-use http\Env\Request;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use AppBundle\Form\WebPay\WebpayPayType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Post controller.
@@ -16,35 +16,67 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 class WebpayController extends Controller
 {
     /**
-     * Lists all post entities.
-     *
      * @Route("/", name="webpay_index")
      * @Method("GET")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction()
     {
-        //$em = $this->getDoctrine()->getManager();
+        $form = $this->createForm(
+            WebpayPayType::class,
+            null,
+            [
+                'action' => $this->generateUrl('webpay_process_payment'),
+                'method' => 'POST',
+            ]
+        );
 
-        //$posts = $em->getRepository('AppBundle:Post')->findAll();
-
-        return $this->render('@App/webpay/index.html.twig', array(
-            'prueba' => 'prueba',
-        ));
+        return $this->render(
+            '@App/webpay/index.html.twig',
+            [
+                'form' => $form->createView(),
+            ]
+        );
     }
 
     /**
-     * @Route("/pagar", name="webpay_pagar")
+     * @Route("/pagar", name="webpay_process_payment")
      * @Method("POST")
      *
+     * @param Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function pagarAction(Post $post){
+    public function pagarAction(Request $request)
+    {
+        $form = $this->createForm(
+            WebpayPayType::class,
+            null,
+            [
+                'action' => $this->generateUrl('webpay_process_payment'),
+                'method' => 'POST',
+            ]
+        );
 
-        var_dump('gola');
-        die();
+        $form->handleRequest($request);
 
-        return $this->redirectToRoute('post_edit', array('id' => 3));
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
 
+            return $this->render(
+                '@App/webpay/pagar.html.twig',
+                [
+                    'data' => $data,
+                ]
+            );
+        }
 
-
+        return $this->render(
+            '@App/webpay/index.html.twig',
+            [
+                'form' => $form->createView(),
+            ]
+        );
     }
 }
