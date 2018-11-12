@@ -10,9 +10,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-use Freshwork\Transbank\CertificationBagFactory;
-use Freshwork\Transbank\TransbankServiceFactory;
-use Freshwork\Transbank\RedirectorHelper;
 
 /**
  * Post controller.
@@ -74,22 +71,6 @@ class PostController extends Controller
      */
     public function editAction(Request $request, Post $post)
     {
-
-        $bag = CertificationBagFactory::integrationWebpayNormal();
-
-        $plus = TransbankServiceFactory::normal($bag);//webpay normal -> plus
-
-        //Para transacciones normales, solo se puede añadir una linea de detalle de transacción.
-        $plus->addTransactionDetail(1000, 'prueba'.rand(0,10000)); //monto e id transaccion
-
-        //urls: respuesta-> return: se aprueba o rechaza pago; y exitoso
-        $response = $plus->initTransaction('http://test.dev/response', 'http://test.dev/thanks');
-
-
-        echo RedirectorHelper::redirectHTML($response->url, $response->token);
-
-        var_dump($response);
-        die();
 
         //$deleteForm = $this->createDeleteForm($post);
         $deleteForm = $this->createForm(DeletePostType::class, null, [
