@@ -3,8 +3,9 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Transaction;
+use AppBundle\Exception\AcknowledgeTransactionException;
 use AppBundle\Exception\RejectedPaymentException;
-use AppBundle\Exception\WebpayException;
+use AppBundle\Exception\TransactionResultException;
 use AppBundle\Form\TransactionType;
 use AppBundle\Form\WebPay\WebpayPayType;
 use Freshwork\Transbank\CertificationBagFactory;
@@ -121,13 +122,14 @@ class WebpayController extends Controller
         );
     }
 
-
     /**
-     * @Route("/response", name="webpay_response")
-     * @Method({"GET", "POST"})
+     * @Route("/response", name="webpay_response", methods={"POST"})
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws RejectedPaymentException
+     *
+     * @return Response
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      */
     public function responseAction(Request $request)
     {
@@ -142,11 +144,18 @@ class WebpayController extends Controller
                     'redirect' => 'Tu pago fue rechazado',
                 ]
             );
-        } catch (WebpayException $exception) {
+        } catch (TransactionResultException $exception) {
             return $this->render(
                 '@App/webpay/redirectWebpay.html.twig',
                 [
-                    'redirect' => 'Hubo un error inesperado',
+                    'redirect' => 'Hubo un error tratando de construir tu transaction',
+                ]
+            );
+        } catch (AcknowledgeTransactionException $exception){
+            return $this->render(
+                '@App/webpay/redirectWebpay.html.twig',
+                [
+                    'redirect' => 'Hubo un error al registrar tu transaction en webpay',
                 ]
             );
         }

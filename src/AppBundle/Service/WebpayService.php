@@ -2,8 +2,9 @@
 
 namespace AppBundle\Service;
 
+use AppBundle\Exception\AcknowledgeTransactionException;
 use AppBundle\Exception\RejectedPaymentException;
-use AppBundle\Exception\WebpayException;
+use AppBundle\Exception\TransactionResultException;
 use Freshwork\Transbank\CertificationBagFactory;
 use Freshwork\Transbank\RedirectorHelper;
 use Freshwork\Transbank\TransbankServiceFactory;
@@ -43,7 +44,7 @@ class WebpayService
      *
      * @return \Freshwork\Transbank\WebpayStandard\transactionResultOutput
      * @throws RejectedPaymentException
-     * @throws WebpayException
+     * @throws TransactionResultException
      */
     public function executeTransactionResult(WebpayNormal $webpayNormal, string $tokenWs)
     {
@@ -62,7 +63,11 @@ class WebpayService
                 );
             }
         } catch (\SoapFault $exception) {
-            throw new WebpayException($exception->getMessage(), $exception->getCode());
+            $this->logger->error('There was an error building the webpay transaction', [
+                'message' => $exception->getMessage(),
+                'code' => $exception->getCode()
+            ]);
+            throw new TransactionResultException($exception->getMessage(), $exception->getCode());
         }
     }
 
@@ -73,22 +78,27 @@ class WebpayService
      * @param WebpayNormal $webpayNormal
      *
      * @return \Freshwork\Transbank\WebpayStandard\acknowledgeTransactionResponse
-     * @throws WebpayException
+     * @throws AcknowledgeTransactionException
      */
     public function acknowledgeTransaction(WebpayNormal $webpayNormal)
     {
         try {
             return $webpayNormal->acknowledgeTransaction();
         } catch (\SoapFault $exception) {
-            throw new WebpayException($exception->getMessage(), $exception->getCode());
+            throw new AcknowledgeTransactionException($exception->getMessage(), $exception->getCode());
         }
     }
 
     /**
      * @param string $tokenWs
      *
+     * @return string
+     * @throws AcknowledgeTransactionException
      * @throws RejectedPaymentException
-     * @throws WebpayException
+     * @throws TransactionResultException
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      */
     public function redirectToWebpayPayment(string $tokenWs)
     {
