@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Transaction;
 use AppBundle\Exception\RejectedPaymentException;
+use AppBundle\Exception\WebpayException;
 use AppBundle\Form\TransactionType;
 use AppBundle\Form\WebPay\WebpayPayType;
 use Freshwork\Transbank\CertificationBagFactory;
@@ -13,6 +14,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
@@ -129,60 +131,27 @@ class WebpayController extends Controller
      */
     public function responseAction(Request $request)
     {
-        /* Transbank retorna a esta url y esta url con el token que envia por post verifica como salio la transaccion
-         *
-         *
-         * */
         $token_ws = $request->request->get('token_ws');
 
-
-        $certificationBag = CertificationBagFactory::integrationWebpayNormal();
-        $webpayNormal = TransbankServiceFactory::normal($certificationBag);
-
-        /*Se verifica con el token el estado de la transaccion*/
         try {
-            $transactionResult = $webpayNormal->getTransactionResult();
-
-
-            if ($transactionResult->detailOutput->responseCode === 0) {
-                $tansaccionCorrecta = "SI";
-            } else {
-                //orden rechazada
-                throw new RejectedPaymentException('orden rechazada',
-                    $transactionResult->detailOutput->responseCode);
-
-            }
-
-        } catch (\SoapFault $exception) {
-            dump($exception);
-            dump('getTransactionResult');
-            dump(get_class($exception));
-            die('1');
+            $response = $this->get('webpay_service')->redirectToWebpayPayment($token_ws);
+        } catch (RejectedPaymentException $exception) {
+            return $this->render(
+                '@App/webpay/redirectWebpay.html.twig',
+                [
+                    'redirect' => 'Tu pago fue rechazado',
+                ]
+            );
+        } catch (WebpayException $exception) {
+            return $this->render(
+                '@App/webpay/redirectWebpay.html.twig',
+                [
+                    'redirect' => 'Hubo un error inesperado',
+                ]
+            );
         }
 
-
-        /* Independiente la respuesta, al usuario hay que redirigirlo a transbank
-         * este post es para guardar resultado en base de datos
-         * */
-
-        //Se informa a webpay que recibimos la respuesta de la transaccion y fue procesada
-        /*La siguiente llamada concreta la transaccion (acknowledgeTransaction)
-         * si no se llama dentro de cierto tiempo, la tansaccin se cancela
-         * */
-
-        try {
-            $webpayNormal->acknowledgeTransaction();
-
-        } catch (\Exception $exception) {
-            dump($exception);
-            dump('acknowledgeTransaction');
-            dump(get_class($exception));
-            die('2');
-        }
-
-
-        $redirectHTML = RedirectorHelper::redirectBackNormal($transactionResult->urlRedirection);
-        return $this->render('@App/webpay/redirectWebpay.html.twig', ['redirect' => $redirectHTML]);
+        return new Response($response);
 
     }
 
@@ -194,7 +163,11 @@ class WebpayController extends Controller
      */
     public function successAction()
     {
-        dump('compra exitosa');
-        die();
+        return $this->render(
+            '@App/webpay/redirectWebpay.html.twig',
+            [
+                'redirect' => "TODO BIENS",
+            ]
+        );
     }
 }

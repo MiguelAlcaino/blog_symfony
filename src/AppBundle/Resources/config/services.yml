@@ -1,0 +1,6 @@
+services:
+    webpay_service:
+        class: AppBundle\Service\WebpayService
+        arguments:
+            - "@twig"
+            - "@logger"
